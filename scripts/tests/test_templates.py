@@ -1035,14 +1035,27 @@ def test_changelog_contract_requires_four_to_eight_changes() -> None:
 def test_skill_routes_visual_repairs_and_generated_assets_without_losing_contracts() -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     diagrams = (SKILL_ROOT / "references" / "diagrams.md").read_text(encoding="utf-8")
+    design = (SKILL_ROOT / "references" / "design.md").read_text(encoding="utf-8")
     for mode in ("New document", "Content-only", "Visual repair", "Generated asset"):
         check(f"SKILL work mode keeps {mode}", mode in skill)
     check("visual repair locks target, preserve, evidence, and artifact matrices",
           all(term in skill for term in (
-              "`target`", "`preserve`", "PDF: target page", "Screen: 1280px",
+              "`target`", "`preserve`", "PDF: target page",
               "PPTX: editable source", "Generated asset: target slot",
-          )),
+          )) and any(
+              line.strip().startswith("- Screen:")
+              and "`references/design.md`" in line
+              for line in skill.splitlines()
+          ),
           "visual feedback contract incomplete")
+    screen_matrix = design.split("### Responsive screenshot verification", 1)[-1]
+    check("screen matrix retains baseline and intermediate viewport coverage",
+          "### Responsive screenshot verification" in design
+          and all(term in screen_matrix for term in (
+              "375px", "1280px", "both sides of each actual breakpoint",
+              "intermediate tablet width",
+          )),
+          "responsive reference lost viewport coverage")
     check("image generation routes from observed capability",
           "Route from observed capability" in skill
           and "Claude, Codex, most coding agents" not in skill,
