@@ -201,8 +201,8 @@ python3 scripts/mermaid_normalize.py raw.svg -o clean.svg
 - Landing or documentation-site work follows `references/design.md` Section 11 «Landing
   Page (screen-first)»: its «Documentation site» subsection for the doc shell (sidebar
   rail, on-this-page TOC, borderless prev/next pager), then the «Responsive
-  screenshot verification» subsection that closes Section 12 (screenshot at 375px /
-  1280px per locale, objective line-widow scan) before shipping.
+  screenshot verification» subsection that closes Section 12 (breakpoint, tablet, and baseline screenshots
+  per locale, objective line-widow scan) before shipping.
 - Content changes should avoid CSS churn unless layout behavior is part of the task.
 - Public copy states the product function before design terminology. Write each locale
   naturally, preserve approved taglines and personal stories, and keep claims identical
@@ -283,11 +283,10 @@ dependency.
   the full test suite before template verification. Tests that
   need an optional render dependency use the suite's explicit `SKIP:` counter and
   fail when a CI-required dependency is unavailable; never turn a skip into `OK:`.
-- Validate workflow edits on a feature branch (push, watch the run go green) before
-  merging to `main`. Local font and dependency assumptions diverge from CI more often
-  than expected; this project has already burned commits on `pip` cache requiring a
-  manifest, the `fallback_present` set missing Ubuntu defaults (DejaVu / Liberation),
-  and CI never having commercial fonts (Charter / TsangerJinKai02).
+- Validate workflow edits with the CI run for the exact pushed commit on the authorized
+  branch; do not create a feature branch solely for validation. A local pass does not
+  prove CI font or dependency availability: check cache manifests, Ubuntu fallback
+  fonts (DejaVu / Liberation), and the absence of commercial fonts (Charter / TsangerJinKai02).
 - Host-versus-CI differences are expressed as explicit opt-in env vars, currently
   `KAMI_ALLOW_FALLBACK_ONLY` (accept fallback fonts), `KAMI_AUTHOR`, `KAMI_FONT_DIR`,
   `KAMI_PACKAGE_ROOT_NAME`, `KAMI_PACKAGE_MAX_BYTES`, and `KAMI_UPDATE_URL`. That is
@@ -330,16 +329,17 @@ dependency.
 Applies before handing off any user-visible typeset deliverable (rendered PDF,
 `README.md`, public site page).
 
-- Scan page by page for three critical wrap states: a trailing line of only 1-2 words
+- Scan page by page for three wrap candidates: a trailing line of only 1-2 words
   (orphan), a line one word away from wrapping, and a line that wraps early without
-  filling its container.
+  filling its container. Confirm each in rendered context; an intentional short line
+  is valid and does not need rewriting to make the count zero.
 - Split the work: `python3 scripts/build.py --check-orphans <pdf>` and
   `--check-density <pdf>` catch PDF orphans and sparse pages deterministically; the
   manual pass covers what they cannot see, near-wrap and premature-wrap states inside
-  a page, plus non-PDF surfaces (README, `index*.html` at 375px / 1280px).
-- One hit means a whole-document sweep for that class, not a single-spot fix. Fix by
-  adjusting content length first; changing font size or spacing to dodge a wrap is the
-  last resort and must re-pass `python3 scripts/build.py --check` and the page-count
+  a page, plus non-PDF surfaces (README and the responsive matrix in `references/design.md`).
+- One confirmed defect means a whole-document sweep for that class, not a single-spot fix. Check container geometry and forced breaks before shortening copy; preserve
+  facts and approved wording. Do not shrink type to dodge a wrap; deliberate layout
+  changes must re-pass `python3 scripts/build.py --check` and the page-count
   contract.
 
 ## Verification
@@ -372,8 +372,8 @@ maintenance side only.
   isolated install smoke described under Generated Mirrors.
 - Public site or AI visibility changes: check `site/index*.html`, README,
   `site/llms.txt`, `site/robots.txt`, `site/sitemap.xml`, JSON-LD, FAQ, install links, and download links
-  together, then serve the page and screenshot 375px / 1280px per locale, plus 320px
-  when CTA width or mobile nav changes.
+  together, then serve the page and verify the responsive matrix in
+  `references/design.md` per locale.
 
 ## Fonts
 
